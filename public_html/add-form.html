@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="my.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+            .name {
+                width: 100px;
+                margin: 20px;
+            }
+            .whole {
+                width: 20px;
+                margin: 10px;
+            }
+            .fraction {
+                width: 20px;
+            }
+
+            .directions {
+                width: 80%;
+                height: 20%;
+            }
+            .button {
+                margin: 30px; 
+                cursor: pointer;
+            }
+            form {
+                text-align: center;
+            }
+        </style>
+
+    </head>
+    <body class="page">
+        <header class="header">
+            <h1>
+                <b style="color: lightpink">Add Recipe</b>
+            </h1>
+        </header>
+        <div class="card">
+            <form class="content" id="add">
+                <input id="title" type="text" name="title" placeholder="Recipe Title">
+                <table id="ingredients" style="margin-left: auto; margin-right: auto"></table>
+                <input class="button" type ="button" id="add_ingredient" value="Add Ingredient">
+                <div>
+                    <textarea class="directions" id="directions" name="directions" rows="20" cols="20" placeholder="Recipe Directions"></textarea>
+                </div>       
+                <input class="button" id="submit" type="button" value="Submit">
+            </form>
+            <div id = "error-message" class ="error"></div>
+        </div>
+        <script src="add.js"></script>
+    </body>
+</html>
