@@ -1,21 +1,22 @@
 let list:HTMLUListElement|null = <HTMLUListElement|null>document.getElementById("recipe-list")
 
 if (list != null) {
-    fetch("/get-recipes").then(function (response) {
+    fetch("/api").then(function (response:Response) {
         return response.json();
     }).then(function (data) {
-        console.log(data)
-        for (let recipe of data["recipes"]) {
-            console.log(recipe);
+        for (let i = 0; i < data["titles"].length; i++) {
+            let recipe = data["titles"][i];
+            let category = data["categories"][i];
+
 
             let li:HTMLLIElement = document.createElement("li");
             li.classList.add("list-item");
 
             let img:HTMLImageElement = document.createElement("img");
-            img.src = "pictures/" + recipe.replace(/\s+/g, "_") + ".jpg";
+            img.src = "pictures/" + category + ".jpg";
             img.classList.add("list-img");
             img.style.width = "50px";
-
+            
             let p:HTMLParagraphElement = document.createElement("p");
             p.textContent = recipe;
 

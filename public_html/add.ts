@@ -4,6 +4,8 @@ let submitButton:HTMLElement|null = document.getElementById("submit");
 let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("title");
 let descriptionInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
+let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
+let possible:Array<string> = ["Sugar", "Flour","Baking Soda", "Baking Powder", "Brown Sugar", "Vanilla"]
 
 class Ingredient {
     name: string;
@@ -52,14 +54,17 @@ class Ingredient {
 }
 
 class Recipe {
+    validCategories:Array<string> = ["Other", "Cookies", "Cakes", "Muffins"];
     title: string;
     ingredients:Array<Ingredient>;
     directions: string;
+    category:string;
     json: object;
-    constructor (title: string, ingredients: Array<Ingredient>, directions:string) {
+    constructor (title: string, ingredients: Array<Ingredient>, directions:string, category:string) {
         this.title = title;
         this.ingredients = ingredients;
         this.directions = directions;
+        this.category = category;
         let jsonIngredients:Array<object> = [];
         for (let ingredient of ingredients) {
             jsonIngredients.push(ingredient.jsonify());
@@ -67,7 +72,8 @@ class Recipe {
         this.json = {
             title: this.title,
             ingredients: jsonIngredients,
-            directions: this.directions
+            directions: this.directions,
+            category: this.category
         };
     }
     validate () {
@@ -79,6 +85,9 @@ class Recipe {
                         ingredients must have a name, and the three proceeding boxes must be numbers or empty!`
             }
         }
+        if (! this.validCategories.includes(this.category))
+            return "Invalid Category";
+        
         return true;
     }
 }
@@ -100,13 +109,26 @@ function submit () {
         let data = new Ingredient(name, whole, num, den, unit)
         list.push(data);
     }
-    let recipe = new Recipe(titleInput.value, list, descriptionInput.value);
+    let recipe = new Recipe(titleInput.value, list, descriptionInput.value, categoryInput.value);
     let valid:boolean|string = recipe.validate();
     if (valid != true) {
         errorBox.textContent = valid; 
     } else {
-        console.log(recipe.json);
-        console.log(recipe);
+        fetch("/api", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(recipe.json).replace(/'/g, '"')
+          }).then(function (response:Response) {
+                if (response.status === 200) {
+                    return;
+                } else if (response.status === 409) {
+                    errorBox.textContent="That name is alread taken!";
+                } else {
+                    errorBox.textContent="Request Could not be completed... sorry :(";
+                }
+          });
     }
 
 }
@@ -154,24 +176,30 @@ function addRow() {
     let den:HTMLInputElement = document.createElement("input");
     let divider:HTMLTableDataCellElement = document.createElement("td");
     let remove:HTMLElement = document.createElement("strong");
-
+    let inDiv:HTMLElement = document.createElement("td");
 
     name.type = "text";
     name.classList.add("name");
+    inDiv.classList.add("autocomplete");
     name.placeholder="Ingredient";
+    name.autocomplete="off";
     name.name = "name";
+    inDiv.append(name);
 
     whole.type = "text";
     whole.classList.add("whole");
+    whole.autocomplete="off";
     whole.name = "whole";
 
     num.type = "text";
     num.classList.add("fraction");
+    num.autocomplete="off";
     num.name = "num";
 
 
     den.type = "text";
     den.classList.add("fraction");
+    den.autocomplete="off";
     den.name =  "den";
 
     divider.textContent = "/";
@@ -181,7 +209,7 @@ function addRow() {
     remove.style.cursor = "pointer";
     remove.addEventListener("click", removeIngredient);
 
-    row.append(name);
+    row.append(inDiv);
     row.append(whole);
     row.append(num);
     row.append(divider);
@@ -189,13 +217,15 @@ function addRow() {
     row.append(createSelect());
     row.append(remove);
     ingredients.append(row);
+    autocomplete(name, possible);
 }
 
 if (submitButton != null &&
     titleInput != null &&
     descriptionInput != null &&
     ingredients != null &&
-    errorBox != null) {
+    errorBox != null &&
+    categoryInput != null) {
 
     submitButton.addEventListener("click", submit);
 }

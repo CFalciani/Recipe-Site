@@ -18,10 +18,11 @@ pool.connect().then(function () {
 });
 
 app.get("/api", function (req:Request, res:Response) {
-    pool.query("SELECT (title, ingredients, directions) FROM LIST").then(function (response) {
+    pool.query("SELECT json_build_object('titles', json_agg(list.title), 'categories', json_agg(list.category)) FROM LIST").then(function (response) {
         res.status(200);
         res.header("Content-Type", "application/json")
-        res.json({rows: response.rows});
+        console.log(response["rows"][0]["json_build_object"]);
+        res.json(response["rows"][0]["json_build_object"]);
     }).catch(function (err) {
         res.sendStatus(500);
         console.log(err);
@@ -87,6 +88,8 @@ app.delete("/api/:recipe" , function (req:Request, res:Response) {
         }
     })
 });
+
+app.post("/file", upload.single)
 
 app.post("/api", function (req:Request, res: Response) {
     let body = req.body;

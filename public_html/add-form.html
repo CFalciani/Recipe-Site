@@ -5,7 +5,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
-
             .name {
                 width: 100px;
                 margin: 20px;
@@ -17,7 +16,6 @@
             .fraction {
                 width: 20px;
             }
-
             .directions {
                 width: 80%;
                 height: 20%;
@@ -29,6 +27,9 @@
             form {
                 text-align: center;
             }
+            #image {
+                margin-top:20px;
+            }
         </style>
 
     </head>
@@ -39,17 +40,26 @@
             </h1>
         </header>
         <div class="card">
-            <form class="content" id="add">
-                <input id="title" type="text" name="title" placeholder="Recipe Title">
-                <table id="ingredients" style="margin-left: auto; margin-right: auto"></table>
+            <form class="content" id="add" autocomplete="false">
+                <input id="title" autocomplete="off" type="text" name="title" placeholder="Recipe Title">
+                <table id="ingredients" autocomplete="off" style="margin-left: auto; margin-right: auto"></table>
                 <input class="button" type ="button" id="add_ingredient" value="Add Ingredient">
                 <div>
                     <textarea class="directions" id="directions" name="directions" rows="20" cols="20" placeholder="Recipe Directions"></textarea>
-                </div>       
+                </div><br>
+                <label for="category">Category: </label>
+                <select id="category" name="category">
+                    <option value=Other>Other</option>
+                    <option value=Cakes>Cakes</option>
+                    <option value=Cookies>Cookies</option>
+                    <option value=Muffins>Muffins</option>
+                </select><br>     
+                <input type="file" id="image" accept="image/*"><br>
                 <input class="button" id="submit" type="button" value="Submit">
             </form>
             <div id = "error-message" class ="error"></div>
         </div>
+        <script src="autocomplete.js"></script> <!-- from w3 schools for auto complete https://www.w3schools.com/howto/howto_js_autocomplete.asp -->
         <script src="add.js"></script>
     </body>
 </html>
