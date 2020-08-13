@@ -36,7 +36,7 @@ function populate_category(cat:string) {
             li.append(p);
 
             li.addEventListener("click", function () {
-                window.location.href = "recipes/" + recipe.replace(/\s+/g, '_') + ".html";
+                window.location.href = "/recipe/" + recipe;
             });
             list.append(li);
         }
