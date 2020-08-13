@@ -50,7 +50,9 @@ function populate_search (term:string) {
     clear_list();
     let cat = selection?.value;
     for (let i = 0; i < recipes["titles"].length; i++) {
-        if ((cat == "" || recipes["categories"][i] == cat) && (term == "" || recipes["titles"][i].indexOf(term) != -1)) {
+        if ((cat == "" || recipes["categories"][i] == cat) && 
+            (term == "" || recipes["titles"][i].toLowerCase().indexOf(term.toLowerCase()) != -1)
+            ) {
             let recipe = recipes["titles"][i];
             let category = recipes["categories"][i];
 
