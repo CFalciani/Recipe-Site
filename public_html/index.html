@@ -7,6 +7,19 @@
         <link rel="stylesheet" href="my.css">
         <style>
             body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+            .float-right{
+                float:right;
+            }
+            .float-left{
+                float:left;
+            }
+            .title-bar>* {
+                margin-top: auto;
+                margin-bottom: auto;
+            }
+            #search {
+                margin-left: 10px;
+            }
         </style>
     </head>
     <body class = "page">
@@ -20,8 +33,20 @@
 
             <div class="card">
                 <img style="width:100%" src="pictures/front.jpg">
-                <div class="text-block">                        
-                    <h3><b>Recipes:</b></h3>
+                <div class="text-block">  
+                    <div class="title-bar">                      
+                        <h3 class="float-left"><b>Recipes:</b></h3>                        
+                        <input id="search" class="float-right" placeholder="Search...">
+                        <div class="float-right">
+                            <label for="category">Sort By Category: </label>
+                            <select id="category" name="category">    
+                                <option id="All" value="">All</option>
+                                <option id="Cookies" value="Cookies">Cookies</option>
+                                <option id="Muffins" value="Muffins">Muffins</option>
+                                <option id="Cakes" value="Cakes">Cakes</option>
+                            </select>
+                        </div>
+                    </div><br><br>
                     <ul class="recipe-list" id="recipe-list">
                     </ul>
                 </div>
