@@ -1,4 +1,5 @@
 *
+!/views
 !/public_html
 /public_html/*.js
 !.gitignore
