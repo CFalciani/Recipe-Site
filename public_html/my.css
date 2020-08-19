@@ -1,0 +1,90 @@
+.card {
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+.page {
+    background-color: #f1f1f1;
+
+}
+.content {
+    margin: 32px;
+    margin-top: 10px;
+    padding:32px;
+}
+.header {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 16px;
+    text-align: center;
+}
+
+.recipe-list {
+    list-style-type: none;
+}
+.list-item:hover {
+    list-style-type: none;
+    background-color: lightgray;
+}
+.list-item {
+    padding: 16px;
+    list-style-type: none;
+}
+.list-img {
+    margin-right: 16px;
+    float: left;
+}
+.text-block {
+    padding: 16px;
+}
+.error{
+    margin-left: auto;
+    margin-right: auto;
+    color: red;
+    text-align: center;
+    padding-bottom: 30px;
+    max-width: 600px;
+}
+
+
+
+
+/* from w3 schools for auto complete https://www.w3schools.com/howto/howto_js_autocomplete.asp */
+* {
+    box-sizing: border-box;
+  }
+  
+.autocomplete {
+  /*the container must be positioned relative:*/
+  position: relative;
+  display: inline-block;
+}
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  width:150px;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 80%;
+  left: 15%;
+  right: 0;
+}
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}

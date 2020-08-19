@@ -1,0 +1,28 @@
+doctype html
+head
+  meta(charset='utf-8')
+  title Mom&apos;s Recipes
+  meta(name='viewport' content='width=device-width, initial-scale=1')
+  link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Raleway')
+  link(rel='stylesheet' href='/my.css')
+  style.
+    body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+    strong {margin-left: .5em}
+    li {margin:2%}
+    h1 {color: lightpink};
+#main-page.content(style='z-index:1')
+  header.header
+    h1
+      b#recipe-title
+  .card
+    img#image(style='width:100%' onerror="this.remove()")
+    .text-block
+      h3 Ingredients
+      ul#ingredients-list
+      h3 Directions
+      p#directions
+script.
+    let title=!{JSON.stringify(title)}
+    let ingredients=!{JSON.stringify(ingredients)}
+    let directions=!{JSON.stringify(directions)}
+script(src='/recipe.js' type='text/javascript')

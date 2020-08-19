@@ -1,8 +1,3 @@
-*
-!/views
-!/public_html
-/public_html/*.js
-!.gitignore
-!*.json
-!*.ts
-!*.html
+*.js
+node_modules/
+public_html/pictures/*
