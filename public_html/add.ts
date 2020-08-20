@@ -2,10 +2,11 @@ let ingredients:HTMLElement|null = document.getElementById("ingredients");
 let addButton:HTMLElement|null = document.getElementById("add_ingredient");
 let submitButton:HTMLElement|null = document.getElementById("submit");
 let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("title");
-let descriptionInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
+let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
 let possible:Array<string> = ["Sugar", "Flour","Baking Soda", "Baking Powder", "Brown Sugar", "Vanilla"]
+let oldRecipe:Recipe;
 
 class Ingredient {
     name: string;
@@ -59,22 +60,27 @@ class Recipe {
     ingredients:Array<Ingredient>;
     directions: string;
     category:string;
-    json: object;
     constructor (title: string, ingredients: Array<Ingredient>, directions:string, category:string) {
         this.title = title;
         this.ingredients = ingredients;
         this.directions = directions;
         this.category = category;
+    }
+    getIngArray() {
         let jsonIngredients:Array<object> = [];
-        for (let ingredient of ingredients) {
+        for (let ingredient of this.ingredients) {
             jsonIngredients.push(ingredient.jsonify());
         }
-        this.json = {
+        return jsonIngredients;
+    }
+    jsonify() {
+        let json:object = {
             title: this.title,
-            ingredients: jsonIngredients,
+            ingredients: this.getIngArray(),
             directions: this.directions,
             category: this.category
         };
+        return json;
     }
     validate () {
         if (this.title === "") 
@@ -92,7 +98,7 @@ class Recipe {
     }
 }
 
-function submit () {
+function getRecipe() {
     errorBox.textContent = ""; // clear error box
 
     let row: any;
@@ -109,7 +115,28 @@ function submit () {
         let data = new Ingredient(name, whole, num, den, unit)
         list.push(data);
     }
-    let recipe = new Recipe(titleInput.value, list, descriptionInput.value, categoryInput.value);
+    let recipe = new Recipe(titleInput.value, list, directionsInput.value, categoryInput.value);
+    return recipe;
+}
+
+function submitAdd() {
+    errorBox.textContent = ""; // clear error box
+
+    let row: any;
+    let list: Array<Ingredient> = [];
+    let rows:any = ingredients.getElementsByTagName("tr"); // Type any bc/we cannot iterate over HTMLCollection
+
+    for (row of rows) {
+        let inputs: HTMLCollection = row.getElementsByTagName("input");
+        let name:string = (<HTMLInputElement>inputs[0]).value;
+        let whole: string = (<HTMLInputElement>inputs[1]).value;
+        let num:string = (<HTMLInputElement>inputs[2]).value;
+        let den:string = (<HTMLInputElement>inputs[3]).value;
+        let unit:string = row.getElementsByTagName("select")[0].value;
+        let data = new Ingredient(name, whole, num, den, unit)
+        list.push(data);
+    }
+    let recipe = new Recipe(titleInput.value, list, directionsInput.value, categoryInput.value);
     let valid:boolean|string = recipe.validate();
     if (valid != true) {
         errorBox.textContent = valid; 
@@ -119,7 +146,50 @@ function submit () {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(recipe.json).replace(/'/g, '"')
+            body: JSON.stringify(recipe.jsonify()).replace(/'/g, '"')
+          }).then(function (response:Response) {
+                if (response.status === 200) {
+                    return;
+                } else if (response.status === 409) {
+                    errorBox.textContent="That name is alread taken!";
+                } else {
+                    errorBox.textContent="Request Could not be completed... sorry :(";
+                }
+          });
+    }
+
+}
+
+function submitEdit() {
+    let recipe:Recipe = getRecipe();
+    let valid:boolean|string = recipe.validate();
+    if (valid != true) {
+        errorBox.textContent = valid; 
+    } else {
+        let columns:Array<string> = [];
+        let changes:Array<string|object> = [];
+        if (recipe.title != oldRecipe.title) {
+            columns.push("title");
+            changes.push(recipe.title);
+        }
+        if (recipe.ingredients != oldRecipe.ingredients) {
+            columns.push("ingredients");
+            changes.push(recipe.getIngArray());
+        }
+        if (recipe.directions != oldRecipe.directions) {
+            columns.push("directions");
+            changes.push(recipe.directions);
+        }
+        if (recipe.category != oldRecipe.category) {
+            columns.push("category");
+            changes.push(recipe.category)
+        }
+        fetch(`/api/${oldRecipe.title}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({"column": columns, "new": changes})
           }).then(function (response:Response) {
                 if (response.status === 200) {
                     return;
@@ -166,7 +236,7 @@ function createSelect() {
     return select;
 }
 
-function addRow() {
+function addRow(ing = null) {
 
     let row:HTMLTableRowElement = document.createElement("tr");
 
@@ -177,6 +247,7 @@ function addRow() {
     let divider:HTMLTableDataCellElement = document.createElement("td");
     let remove:HTMLElement = document.createElement("strong");
     let inDiv:HTMLElement = document.createElement("td");
+    let select:HTMLSelectElement = createSelect();
 
     name.type = "text";
     name.classList.add("name");
@@ -208,30 +279,67 @@ function addRow() {
     remove.style.color = "grey";
     remove.style.cursor = "pointer";
     remove.addEventListener("click", removeIngredient);
-
+    if (ing != null) {
+        if (ing.name) 
+            name.value = ing.name;
+        if (ing.whole) 
+            whole.value = ing.whole;
+        if (ing.num) 
+            num.value = ing.num;
+        if (ing.den) 
+            den.value = ing.den;
+        select.value = ing.unit;
+    }
     row.append(inDiv);
     row.append(whole);
     row.append(num);
     row.append(divider);
     row.append(den);
-    row.append(createSelect());
+    row.append(select);
     row.append(remove);
     ingredients.append(row);
     autocomplete(name, possible);
 }
 
-if (submitButton != null &&
-    titleInput != null &&
-    descriptionInput != null &&
-    ingredients != null &&
-    errorBox != null &&
-    categoryInput != null) {
+function add() {
+    if (submitButton != null &&
+        titleInput != null &&
+        directionsInput != null &&
+        ingredients != null &&
+        errorBox != null &&
+        categoryInput != null) {
 
-    submitButton.addEventListener("click", submit);
+        submitButton.addEventListener("click", submitAdd);
+    }
+
+    if (addButton != null && ingredients != null) {
+        addButton.addEventListener("click", addRow);
+    } else {
+        console.log("Error: Elements not found")
+    }
 }
 
-if (addButton != null && ingredients != null) {
-    addButton.addEventListener("click", addRow);
-} else {
-    console.log("Error: Elements not found")
+function edit() {
+    if (submitButton != null &&
+        titleInput != null &&
+        directionsInput != null &&
+        ingredients != null &&
+        errorBox != null &&
+        categoryInput != null) {
+
+        titleInput.value = oldTitle;
+        for (let ing of oldIngredients) {
+            addRow(ing);
+        }
+        directionsInput.value = oldDirections;
+        categoryInput.value = oldCategory;
+        oldRecipe = getRecipe();
+        submitButton.addEventListener("click", submitEdit);
+    }
+
+    if (addButton != null && ingredients != null) {
+        addButton.addEventListener("click", addRow);
+    } else {
+        console.log("Error: Elements not found")
+    }
 }

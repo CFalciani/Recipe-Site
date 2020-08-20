@@ -71,17 +71,17 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
         if (i != 0) {
             queryString += ',';
         }
-        queryString += `${body.column[i]} = '${body.new[i]}'`;
+        queryString += `${body.column[i]} = $${i + 1}`
     }
     queryString += ` WHERE title = '${recipe}'`;
-    pool.query(queryString).then(function (data) {
+    pool.query(queryString, body.new).then(function (data) {
         if (data.rowCount < 1) {
             res.sendStatus(404);
         } else {
             res.sendStatus(200);
         }
     })
-    console.log("Update " + recipe);
+    console.log("Update " + recipe + ": " + queryString);
 });
 
 app.delete("/api/:recipe" , function (req:Request, res:Response) {
