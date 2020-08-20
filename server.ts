@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
-const pg = require("pg");
+import pg, {QueryResult} from "pg";
 const connection = require("./env.json");
 const port:number = 3000;
 const hostname:string = "localhost";
@@ -18,7 +18,7 @@ pool.connect().then(function () {
 });
 
 app.get("/api", function (req:Request, res:Response) {
-    pool.query("SELECT json_build_object('titles', json_agg(list.title), 'categories', json_agg(list.category)) FROM LIST").then(function (response) {
+    pool.query("SELECT json_build_object('titles', json_agg(list.title), 'categories', json_agg(list.category)) FROM LIST").then(function (response:QueryResult) {
         res.status(200);
         res.header("Content-Type", "application/json")
         res.json(response["rows"][0]["json_build_object"]);
@@ -32,7 +32,7 @@ app.get("/api", function (req:Request, res:Response) {
 app.get("/api/category/:cat", function (req:Request, res:Response) {
     let category:string = req.params["cat"];
     console.log("Request all in category " + category);
-    pool.query("SELECT (title, ingredients, directions, category) FROM list WHERE category = $1", [category]).then(function (data) {
+    pool.query("SELECT (title, ingredients, directions, category) FROM list WHERE category = $1", [category]).then(function (data:QueryResult) {
         if (data.rowCount < 1) {
             res.sendStatus(404);
         } else {
@@ -46,7 +46,7 @@ app.get("/api/category/:cat", function (req:Request, res:Response) {
 app.get("/api/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Request " + recipe);
-    pool.query("SELECT (title, ingredients, directions, category) FROM list WHERE title = $1", [recipe]).then(function (data) {
+    pool.query("SELECT (title, ingredients, directions, category) FROM list WHERE title = $1", [recipe]).then(function (data:QueryResult) {
         if (data.rowCount < 1) {
             res.sendStatus(404);
         } else {
@@ -74,7 +74,7 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
         queryString += `${body.column[i]} = $${i + 1}`
     }
     queryString += ` WHERE title = '${recipe}'`;
-    pool.query(queryString, body.new).then(function (data) {
+    pool.query(queryString, body.new).then(function (data:QueryResult) {
         if (data.rowCount < 1) {
             res.sendStatus(404);
         } else {
@@ -87,7 +87,7 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
 app.delete("/api/:recipe" , function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Delete " + recipe);
-    pool.query("DELETE FROM list WHERE title = $1", [recipe]).then(function (response) {
+    pool.query("DELETE FROM list WHERE title = $1", [recipe]).then(function (response:QueryResult) {
         if (response.rowCount >= 1) {
             res.sendStatus(200);
         } else {
@@ -107,7 +107,7 @@ app.post("/api", function (req:Request, res: Response) {
             res.sendStatus(400);
             return;
     }
-    pool.query("SELECT title FROM list WHERE title = $1", [body.title]).then(function (data) {
+    pool.query("SELECT title FROM list WHERE title = $1", [body.title]).then(function (data:QueryResult) {
         if (data.rowCount > 0) {
             res.sendStatus(409);
             return;
@@ -122,7 +122,7 @@ app.post("/api", function (req:Request, res: Response) {
 
 app.get("/recipe/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
-    pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (response) {
+    pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (response:QueryResult) {
         if (response.rowCount == 1) {
             res.status(200);
             res.render('recipes', response.rows[0]);
@@ -135,7 +135,7 @@ app.get("/recipe/:recipe", function (req:Request, res:Response) {
 app.get("/edit/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Edit " + recipe);
-    pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (data) {
+    pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (data:QueryResult) {
         if (data.rowCount == 0) {
             res.sendStatus(404);
             return;
