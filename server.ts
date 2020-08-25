@@ -7,6 +7,10 @@ const port:number = 3000;
 const hostname:string = "localhost";
 const app = express();
 
+interface LooseObject {
+    [key: string]: any
+}
+
 app.use(express.json());
 app.set('view engine', 'pug')
 app.use(express.static("public_html"));
@@ -144,6 +148,30 @@ app.get("/edit/:recipe", function (req:Request, res:Response) {
         res.render("edit", data.rows[0]);
     })
 });
+
+app.get("/ingredients", function (req:Request, res:Response) {
+    console.log("Request for ingredients list");
+    pool.query("SELECT ingredient FROM conversion").then(function (response:QueryResult) {
+        res.status(200);
+        res.header("Content-Type", "application/json")
+        res.json({ingredients: response.rows})
+    })
+})
+
+app.get("/conversions", function (req:Request, res:Response) {
+    console.log("Request for conversions list");
+    pool.query("SELECT * FROM conversion").then(function (response:QueryResult) {
+        res.status(200);
+        res.header("Content-Type", "application/json")
+        let conversions:LooseObject = {}
+        for (let row of response.rows) {
+            let ingredient:string = row["ingredient"];
+            let gpc:number = row["gpc"];
+            conversions[ingredient] = gpc
+        }
+        res.json(conversions)
+    })
+})
 
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);

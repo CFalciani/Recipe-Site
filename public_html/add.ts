@@ -5,8 +5,16 @@ let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElemen
 let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
-let possible:Array<string> = ["Sugar", "Flour","Baking Soda", "Baking Powder", "Brown Sugar", "Vanilla"]
 let oldRecipe:Recipe;
+let possible:Array<string> = [];
+
+fetch("/ingredients").then(function (response:Response) {
+    return response.json();
+}).then(function (data) {
+    for (let ingredient of data["ingredients"]) {
+        possible.push(ingredient["ingredient"])
+    } 
+})
 
 class Ingredient {
     name: string;
