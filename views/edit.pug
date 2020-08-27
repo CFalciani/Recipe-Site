@@ -52,10 +52,10 @@ header.header
     input#submit.button(type='button' value='Submit')
   #error-message.error
 script. 
-    let oldTitle=!{JSON.stringify(title)}
-    let oldIngredients=!{JSON.stringify(ingredients)}
-    let oldDirections=!{JSON.stringify(directions)}
-    let oldCategory=!{JSON.stringify(category)}
+    oldTitle=!{JSON.stringify(title)}
+    oldIngredients=!{JSON.stringify(ingredients)}
+    oldDirections=!{JSON.stringify(directions)}
+    oldCategory=!{JSON.stringify(category)}
 script(src='/autocomplete.js')
 // from w3 schools for auto complete https://www.w3schools.com/howto/howto_js_autocomplete.asp
 script(src='/add.js')

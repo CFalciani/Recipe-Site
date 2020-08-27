@@ -5,8 +5,27 @@ let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElemen
 let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
-let oldRecipe:Recipe;
 let possible:Array<string> = [];
+interface Window {
+    oldTitle:string;
+    oldCategory:string;
+    oldIngredients:Array<object>;
+    oldDirections:string;
+    autocomplete:Function;
+}
+interface recipe {
+    title:string;
+    directions:string;
+    ingredients:Array<object>;
+    category:string;
+}
+let oldRecipe:recipe;
+let oldTitle = window.oldTitle;
+let oldCategory = window.oldCategory;
+let oldIngredients = window.oldIngredients;
+let oldDirections = window.oldDirections;
+let autocomplete = window.autocomplete;
+
 
 fetch("/ingredients").then(function (response:Response) {
     return response.json();
@@ -341,7 +360,7 @@ function edit() {
         }
         directionsInput.value = oldDirections;
         categoryInput.value = oldCategory;
-        oldRecipe = getRecipe();
+        let oldRecipe = getRecipe();
         submitButton.addEventListener("click", submitEdit);
     }
 

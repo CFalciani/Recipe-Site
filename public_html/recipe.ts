@@ -7,6 +7,22 @@ let tbpc:number = 16;
 let tspc:number = 48;
 let imperial:boolean = true;
 
+interface Window {
+    title:string;
+    ingredients:Array<object>;
+    directions:string;
+}
+interface ingredient {
+    name:string;
+    whole:number|null;
+    num:number|null;
+    den:number|null;
+    unit:string;
+}
+let title:string = window.title;
+let ingredients:Array<ingredient> = <Array<ingredient>>window.ingredients;
+let directions:string = window.directions;
+
 function addImperialIngredient(ingredient) {
     let li = document.createElement("li");
     let ingString:string = "";

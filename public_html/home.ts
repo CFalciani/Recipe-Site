@@ -32,13 +32,24 @@ function populate_category(cat:string) {
             let p:HTMLParagraphElement = document.createElement("p");
             p.textContent = recipe;
 
+            let edit:HTMLElement = document.createElement("strong")
+            edit.textContent = "Edit";
+            edit.addEventListener("click", function (e) {
+                e.stopPropagation();
+                window.location.href = "/edit/" + recipe;
+            })
+
+            let rm:HTMLElement = document.createElement("strong");
+            rm.textContent = "X";
+            rm.addEventListener("click", deleteRecipe)
             li.append(img);
             li.append(p);
-
+            li.append(rm);
+            li.append(edit);
             li.addEventListener("click", function () {
                 window.location.href = "/recipe/" + recipe;
             });
-            list.append(li);
+            list?.append(li);
         }
     }
 }
@@ -68,14 +79,39 @@ function populate_search (term:string) {
             let p:HTMLParagraphElement = document.createElement("p");
             p.textContent = recipe;
 
+            let edit:HTMLElement = document.createElement("strong")
+            edit.textContent = "Edit";
+            edit.addEventListener("click", function (e:Event) {
+                e.stopPropagation();
+                window.location.href = "/edit/" + recipe;
+            })
+
+            let rm:HTMLElement = document.createElement("strong");
+            rm.textContent = "X";
+            rm.addEventListener("click", deleteRecipe)
             li.append(img);
             li.append(p);
-
+            li.append(rm);
+            li.append(edit)
             li.addEventListener("click", function () {
                 window.location.href = "recipes/" + recipe.replace(/\s+/g, '_') + ".html";
             });
             list.append(li);
         }
+    }
+}
+
+function deleteRecipe(e:Event) {
+    e.stopPropagation();
+    let node:HTMLElement|null = <HTMLElement|null>e.target
+    let title = node?.parentElement?.getElementsByTagName("p")[0].textContent;
+    let rm = window.confirm(`Are you sure you would like to delete ${title}?`);
+    if (rm) {
+        fetch(`/api/${title}`, {method: "DELETE"}).then(function (response:Response) {
+            console.log(response.status)
+        })
+    } else {
+        return 
     }
 }
 
