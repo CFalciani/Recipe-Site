@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
+import multer from "multer";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
 import pg, {QueryResult} from "pg";
 const connection = require("./env.json");
 const port:number = 3000;
-const hostname:string = "localhost";
+const hostname:string = "0.0.0.0";
 const app = express();
+const upload = multer({ dest: 'public_html/pictures/recipe/' })
 
 interface LooseObject {
     [key: string]: any
@@ -99,8 +101,6 @@ app.delete("/api/:recipe" , function (req:Request, res:Response) {
         }
     })
 });
-
-//app.post("/file", upload.single)
 
 app.post("/api", function (req:Request, res: Response) {
     let body = req.body;
