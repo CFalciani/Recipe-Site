@@ -176,6 +176,7 @@ function submitAdd() {
             body: JSON.stringify(recipe.jsonify()).replace(/'/g, '"')
           }).then(function (response:Response) {
                 if (response.status === 200) {
+                    window.location.href = "/";
                     return;
                 } else if (response.status === 409) {
                     errorBox.textContent="That name is alread taken!";
@@ -219,6 +220,7 @@ function submitEdit() {
             body: JSON.stringify({"column": columns, "new": changes})
           }).then(function (response:Response) {
                 if (response.status === 200) {
+                    window.location.href = "/";
                     return;
                 } else if (response.status === 409) {
                     errorBox.textContent="That name is alread taken!";
