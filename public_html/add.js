@@ -5,8 +5,9 @@ var titleInput = document.getElementById("title");
 var directionsInput = document.getElementById("directions");
 var errorBox = document.getElementById("error-message");
 var categoryInput = document.getElementById("category");
+var imageInput = document.getElementById("image");
 var possible = [];
-var oldRecipe;
+var oldRecipe = { title: "", directions: "", ingredients: [{}], category: "" };
 var oldTitle = window.oldTitle;
 var oldCategory = window.oldCategory;
 var oldIngredients = window.oldIngredients;
@@ -184,6 +185,9 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category);
         }
+        if (imageInput.files.length != 0) {
+            fetch("/image");
+        }
         fetch("/api/" + oldRecipe.title, {
             method: 'PUT',
             headers: {
@@ -239,22 +243,22 @@ function addRow(ing) {
     var remove = document.createElement("strong");
     var inDiv = document.createElement("td");
     var select = createSelect();
-    name.type = "text";
+    name.type = "search";
     name.classList.add("name");
     inDiv.classList.add("autocomplete");
     name.placeholder = "Ingredient";
     name.autocomplete = "off";
     name.name = "name";
     inDiv.append(name);
-    whole.type = "text";
+    whole.type = "search";
     whole.classList.add("whole");
     whole.autocomplete = "off";
     whole.name = "whole";
-    num.type = "text";
+    num.type = "search";
     num.classList.add("fraction");
     num.autocomplete = "off";
     num.name = "num";
-    den.type = "text";
+    den.type = "search";
     den.classList.add("fraction");
     den.autocomplete = "off";
     den.name = "den";
@@ -290,7 +294,8 @@ function add() {
         directionsInput != null &&
         ingredients != null &&
         errorBox != null &&
-        categoryInput != null) {
+        categoryInput != null &&
+        imageInput != null) {
         submitButton.addEventListener("click", submitAdd);
     }
     if (addButton != null && ingredients != null) {
@@ -306,7 +311,8 @@ function edit() {
         directionsInput != null &&
         ingredients != null &&
         errorBox != null &&
-        categoryInput != null) {
+        categoryInput != null &&
+        imageInput != null) {
         titleInput.value = oldTitle;
         for (var _i = 0, oldIngredients_1 = oldIngredients; _i < oldIngredients_1.length; _i++) {
             var ing = oldIngredients_1[_i];
@@ -314,7 +320,7 @@ function edit() {
         }
         directionsInput.value = oldDirections;
         categoryInput.value = oldCategory;
-        var oldRecipe_1 = getRecipe();
+        oldRecipe = getRecipe();
         submitButton.addEventListener("click", submitEdit);
     }
     if (addButton != null && ingredients != null) {
