@@ -5,6 +5,7 @@ let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElemen
 let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
+let imageInput:HTMLElement|null = document.getElementById("image");
 let possible:Array<string> = [];
 interface Window {
     oldTitle:string;
@@ -19,7 +20,7 @@ interface recipe {
     ingredients:Array<object>;
     category:string;
 }
-let oldRecipe:recipe;
+let oldRecipe:recipe = {title: "", directions: "", ingredients: [{}], category: ""};
 let oldTitle = window.oldTitle;
 let oldCategory = window.oldCategory;
 let oldIngredients = window.oldIngredients;
@@ -211,6 +212,9 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category)
         }
+        if (imageInput.files.length != 0) {
+            fetch(`/image`)
+        }
         fetch(`/api/${oldRecipe.title}`, {
             method: 'PUT',
             headers: {
@@ -276,7 +280,7 @@ function addRow(ing = null) {
     let inDiv:HTMLElement = document.createElement("td");
     let select:HTMLSelectElement = createSelect();
 
-    name.type = "text";
+    name.type = "search";
     name.classList.add("name");
     inDiv.classList.add("autocomplete");
     name.placeholder="Ingredient";
@@ -284,18 +288,18 @@ function addRow(ing = null) {
     name.name = "name";
     inDiv.append(name);
 
-    whole.type = "text";
+    whole.type = "search";
     whole.classList.add("whole");
     whole.autocomplete="off";
     whole.name = "whole";
 
-    num.type = "text";
+    num.type = "search";
     num.classList.add("fraction");
     num.autocomplete="off";
     num.name = "num";
 
 
-    den.type = "text";
+    den.type = "search";
     den.classList.add("fraction");
     den.autocomplete="off";
     den.name =  "den";
@@ -334,7 +338,8 @@ function add() {
         directionsInput != null &&
         ingredients != null &&
         errorBox != null &&
-        categoryInput != null) {
+        categoryInput != null &&
+        imageInput != null) {
 
         submitButton.addEventListener("click", submitAdd);
     }
@@ -352,7 +357,8 @@ function edit() {
         directionsInput != null &&
         ingredients != null &&
         errorBox != null &&
-        categoryInput != null) {
+        categoryInput != null &&
+        imageInput != null) {
 
         titleInput.value = oldTitle;
         for (let ing of oldIngredients) {
@@ -360,7 +366,7 @@ function edit() {
         }
         directionsInput.value = oldDirections;
         categoryInput.value = oldCategory;
-        let oldRecipe = getRecipe();
+        oldRecipe = getRecipe();
         submitButton.addEventListener("click", submitEdit);
     }
 
