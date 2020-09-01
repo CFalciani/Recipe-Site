@@ -165,6 +165,10 @@ app.get("/conversions", function (req, res) {
         res.json(conversions);
     });
 });
+app.post('/image', upload.single('image'), function (req, res, next) {
+    console.log(req.file);
+    res.send(req.file);
+})
 app.listen(port, hostname, function () {
     console.log("Listening at: http://" + hostname + ":" + port);
 });

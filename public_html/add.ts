@@ -5,7 +5,7 @@ let titleInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElemen
 let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("directions");
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
-let imageInput:HTMLElement|null = document.getElementById("image");
+let imageInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("image");
 let homeButton:HTMLElement|null = document.getElementById("home");
 let possible:Array<string> = [];
 interface Window {
@@ -214,8 +214,11 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category)
         }
-        if (imageInput.files.length != 0) {
-            fetch(`/image`)
+        if (imageInput.files.length == 0) {
+            fetch(`/image`, {
+	        method: 'POST',
+		body: imageInput.files[0]
+	    });
         }
         fetch(`/api/${oldRecipe.title}`, {
             method: 'PUT',

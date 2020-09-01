@@ -3,6 +3,7 @@ import multer from "multer";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
 import pg, {QueryResult} from "pg";
+import fs from "fs";
 const connection = require("./env.json");
 const port:number = 3000;
 const hostname:string = "0.0.0.0";
@@ -172,7 +173,10 @@ app.get("/conversions", function (req:Request, res:Response) {
         res.json(conversions)
     })
 })
-
+app.post('/image', upload.single('image'), function (req, res, next) {
+    console.log(req.file);
+    res.send(req.file);
+})
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
 });

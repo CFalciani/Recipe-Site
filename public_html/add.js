@@ -188,7 +188,10 @@ function submitEdit() {
             changes.push(recipe.category);
         }
         if (imageInput.files.length != 0) {
-            fetch("/image");
+            fetch("/image", {
+                method: 'POST',
+                body: imageInput.files[0]
+            });
         }
         fetch("/api/" + oldRecipe.title, {
             method: 'PUT',
