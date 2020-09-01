@@ -6,6 +6,7 @@ var directionsInput = document.getElementById("directions");
 var errorBox = document.getElementById("error-message");
 var categoryInput = document.getElementById("category");
 var imageInput = document.getElementById("image");
+var homeButton = document.getElementById("home");
 var possible = [];
 var oldRecipe = { title: "", directions: "", ingredients: [{}], category: "" };
 var oldTitle = window.oldTitle;
@@ -149,6 +150,7 @@ function submitAdd() {
             body: JSON.stringify(recipe.jsonify()).replace(/'/g, '"')
         }).then(function (response) {
             if (response.status === 200) {
+                window.location.href = "/";
                 return;
             }
             else if (response.status === 409) {
@@ -196,6 +198,7 @@ function submitEdit() {
             body: JSON.stringify({ "column": columns, "new": changes })
         }).then(function (response) {
             if (response.status === 200) {
+                window.location.href = "/";
                 return;
             }
             else if (response.status === 409) {
@@ -304,6 +307,9 @@ function add() {
     else {
         console.log("Error: Elements not found");
     }
+}
+if (homeButton != null) {
+    homeButton.addEventListener("click", function () { window.location.href = "/"; });
 }
 function edit() {
     if (submitButton != null &&

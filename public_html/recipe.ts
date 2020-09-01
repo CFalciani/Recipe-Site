@@ -3,6 +3,7 @@ let image:HTMLImageElement|null = <HTMLImageElement|null>document.getElementById
 let ingredientsList:HTMLUListElement|null = <HTMLUListElement|null>document.getElementById("ingredients-list");
 let directionsBox:HTMLElement|null = document.getElementById("directions");
 let switchButton:HTMLElement|null = document.getElementById("toggle");
+let homeButton:HTMLElement|null = document.getElementById("home");
 let tbpc:number = 16;
 let tspc:number = 48;
 let imperial:boolean = true;
@@ -63,6 +64,10 @@ recipeName.textContent = title;
 image.src = title + ".jpg";
 imperialIngredients();
 directionsBox.textContent = directions
+
+if (homeButton != null) {
+    homeButton.addEventListener("click", function () {window.location.href = "/"});
+}
 
 if (switchButton != null) {
     switchButton.addEventListener("click", function () {

@@ -6,6 +6,7 @@ let directionsInput:HTMLInputElement|null = <HTMLInputElement|null>document.getE
 let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
 let imageInput:HTMLElement|null = document.getElementById("image");
+let homeButton:HTMLElement|null = document.getElementById("home");
 let possible:Array<string> = [];
 interface Window {
     oldTitle:string;
@@ -351,6 +352,10 @@ function add() {
     } else {
         console.log("Error: Elements not found")
     }
+}
+
+if (homeButton != null) {
+    homeButton.addEventListener("click", function () {window.location.href = "/"});
 }
 
 function edit() {

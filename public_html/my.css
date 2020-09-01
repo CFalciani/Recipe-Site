@@ -4,7 +4,12 @@ input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration {
   -webkit-appearance:none;
 }
-
+.home-button {
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    cursor: pointer;
+}
 .newlines {white-space: pre-line}
 
 .card {

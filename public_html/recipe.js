@@ -3,6 +3,7 @@ var image = document.getElementById("image");
 var ingredientsList = document.getElementById("ingredients-list");
 var directionsBox = document.getElementById("directions");
 var switchButton = document.getElementById("toggle");
+var homeButton = document.getElementById("home");
 var tbpc = 16;
 var tspc = 48;
 var imperial = true;
@@ -47,6 +48,9 @@ recipeName.textContent = title;
 image.src = title + ".jpg";
 imperialIngredients();
 directionsBox.textContent = directions;
+if (homeButton != null) {
+    homeButton.addEventListener("click", function () { window.location.href = "/"; });
+}
 if (switchButton != null) {
     switchButton.addEventListener("click", function () {
         if (imperial) {
