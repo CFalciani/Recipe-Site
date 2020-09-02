@@ -86,7 +86,7 @@ function populate_search(term) {
             li.append(rm);
             li.append(edit);
             li.addEventListener("click", function () {
-                window.location.href = "recipes/" + recipe_2.replace(/\s+/g, '_') + ".html";
+                window.location.href = "recipe/" + recipe_2;
             });
             list.append(li);
         }

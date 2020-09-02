@@ -99,7 +99,7 @@ function populate_search (term:string) {
             li.append(rm);
             li.append(edit)
             li.addEventListener("click", function () {
-                window.location.href = "recipes/" + recipe.replace(/\s+/g, '_') + ".html";
+                window.location.href = "recipe/" + recipe;
             });
             list.append(li);
         }
