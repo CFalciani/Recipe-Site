@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
 import pg, {QueryResult} from "pg";
+import fs from "fs";
 import fileUpload from "express-fileupload";
 const connection = require("./env.json");
 const port:number = 3000;
@@ -103,6 +104,12 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
     });
     // Save image if there is one
     let file:LooseObject = req.files
+    let basePath:string = "./public_html/pictures/recipes/"
+    // if name was changed moved image to the new name
+    if (title !== recipe) {
+        fs.renameSync(basePath + recipe + ".jpg", basePath + title + ".jpg")
+    }
+    // If a file was passed, write it the correct location (will overwrite image if one already exists)
     if (file) {
         file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
     }
@@ -115,6 +122,11 @@ app.delete("/api/:recipe" , function (req:Request, res:Response) {
     console.log("Delete " + recipe);
     pool.query("DELETE FROM list WHERE title = $1", [recipe]).then(function (response:QueryResult) {
         if (response.rowCount >= 1) {
+            // Delete image if it exists
+            let path:string = "./public_html/pictures/recipes/" + recipe + ".jpg";
+            if (fs.existsSync(path)) {
+                fs.unlinkSync(path);
+            }
             res.sendStatus(200);
         } else {
             res.sendStatus(404);

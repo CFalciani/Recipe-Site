@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 exports.__esModule = true;
 var express_1 = __importDefault(require("express"));
 var pg_1 = __importDefault(require("pg"));
+var fs_1 = __importDefault(require("fs"));
 var express_fileupload_1 = __importDefault(require("express-fileupload"));
 var connection = require("./env.json");
 var port = 3000;
@@ -19,6 +20,7 @@ var pool = new Pool(connection);
 pool.connect().then(function () {
     console.log("Connected to recipes db!");
 });
+// Get all recipe names and categories
 app.get("/api", function (req, res) {
     pool.query("SELECT json_build_object('titles', json_agg(list.title), 'categories', json_agg(list.category)) FROM LIST").then(function (response) {
         res.status(200);
@@ -30,6 +32,7 @@ app.get("/api", function (req, res) {
     });
     console.log("Request All");
 });
+// Get all recipes with the specified category
 app.get("/api/category/:cat", function (req, res) {
     var category = req.params["cat"];
     console.log("Request all in category " + category);
@@ -44,6 +47,7 @@ app.get("/api/category/:cat", function (req, res) {
         }
     });
 });
+// Get recipe with the specified name
 app.get("/api/:recipe", function (req, res) {
     var recipe = req.params["recipe"];
     console.log("Request " + recipe);
@@ -58,7 +62,12 @@ app.get("/api/:recipe", function (req, res) {
         }
     });
 });
+// Update recipe with specified name 
 app.put("/api/:recipe", function (req, res) {
+    // Should contain a body with a "column" an "new" attribute
+    // Optionally can contain a "files.image" attribute
+    // column should hold a list of strings which are the db columns to change
+    // new is a list of the new values for respective columns
     var recipe = req.params["recipe"];
     console.log(req.body);
     var body = JSON.parse(req.body.recipe);
@@ -70,6 +79,7 @@ app.put("/api/:recipe", function (req, res) {
     }
     var title = recipe; // Default title is the current title
     var queryString = "UPDATE list SET ";
+    // Construct query string
     for (var i = 0; i < body.column.length; i++) {
         if (body.column[i] === "title") {
             title = body["new"][i]; // If title is changed, update it
@@ -88,17 +98,30 @@ app.put("/api/:recipe", function (req, res) {
             res.sendStatus(200);
         }
     });
+    // Save image if there is one
     var file = req.files;
+    var basePath = "./public_html/pictures/recipes/";
+    // if name was changed moved image to the new name
+    if (title !== recipe) {
+        fs_1["default"].renameSync(basePath + recipe + ".jpg", basePath + title + ".jpg");
+    }
+    // If a file was passed, write it the correct location (will overwrite image if one already exists)
     if (file) {
         file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
     }
     console.log("Update " + recipe + ": " + queryString);
 });
+// Delete recipe with the specified name
 app["delete"]("/api/:recipe", function (req, res) {
     var recipe = req.params["recipe"];
     console.log("Delete " + recipe);
     pool.query("DELETE FROM list WHERE title = $1", [recipe]).then(function (response) {
         if (response.rowCount >= 1) {
+            // Delete image if it exists
+            var path = "./public_html/pictures/recipes/" + recipe + ".jpg";
+            if (fs_1["default"].existsSync(path)) {
+                fs_1["default"].unlinkSync(path);
+            }
             res.sendStatus(200);
         }
         else {
@@ -106,7 +129,10 @@ app["delete"]("/api/:recipe", function (req, res) {
         }
     });
 });
+// Add a recipe
 app.post("/api", function (req, res) {
+    // Should contain attributes:
+    // title, ingredients, directions, category, and an optional image
     var body = JSON.parse(req.body.recipe);
     if (!body.hasOwnProperty("title") ||
         !body.hasOwnProperty("ingredients") ||
@@ -116,14 +142,17 @@ app.post("/api", function (req, res) {
         return;
     }
     var title = body.title;
+    // Check if the recipe name already exists
     pool.query("SELECT title FROM list WHERE title = $1", [body.title]).then(function (data) {
         if (data.rowCount > 0) {
+            // If so, we cannot insert as the title is the primary key
             res.sendStatus(409);
             return;
         }
         else {
             pool.query("INSERT INTO list(title, ingredients, directions, category) VALUES($1, $2, $3, $4);", [body.title, body.ingredients, body.directions, body.category]);
             console.log("Create Recipe " + body.title);
+            // Save image file if it exists
             var file = req.files;
             if (file) {
                 file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
@@ -132,6 +161,7 @@ app.post("/api", function (req, res) {
         }
     });
 });
+// Get the html page for the recipe
 app.get("/recipe/:recipe", function (req, res) {
     var recipe = req.params["recipe"];
     pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (response) {
@@ -144,6 +174,7 @@ app.get("/recipe/:recipe", function (req, res) {
         }
     });
 });
+// Get the edit paged for the specified recipe
 app.get("/edit/:recipe", function (req, res) {
     var recipe = req.params["recipe"];
     console.log("Edit " + recipe);
@@ -156,6 +187,7 @@ app.get("/edit/:recipe", function (req, res) {
         res.render("edit", data.rows[0]);
     });
 });
+// Get an array of all ingredients in the conversion db
 app.get("/ingredients", function (req, res) {
     console.log("Request for ingredients list");
     pool.query("SELECT ingredient FROM conversion").then(function (response) {
@@ -164,6 +196,7 @@ app.get("/ingredients", function (req, res) {
         res.json({ ingredients: response.rows });
     });
 });
+// Get an array of all conversions in the db
 app.get("/conversions", function (req, res) {
     console.log("Request for conversions list");
     pool.query("SELECT * FROM conversion").then(function (response) {
