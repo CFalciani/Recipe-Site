@@ -121,6 +121,7 @@ function getRecipe() {
     return recipe;
 }
 function submitAdd() {
+    var _a;
     errorBox.textContent = ""; // clear error box
     var row;
     var list = [];
@@ -142,12 +143,14 @@ function submitAdd() {
         errorBox.textContent = valid;
     }
     else {
+        var form = new FormData();
+        form.append("recipe", JSON.stringify(recipe.jsonify()));
+        if (((_a = imageInput === null || imageInput === void 0 ? void 0 : imageInput.files) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            form.append("image", imageInput === null || imageInput === void 0 ? void 0 : imageInput.files[0]);
+        }
         fetch("/api", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(recipe.jsonify()).replace(/'/g, '"')
+            body: form
         }).then(function (response) {
             if (response.status === 200) {
                 window.location.href = "/";
@@ -163,6 +166,7 @@ function submitAdd() {
     }
 }
 function submitEdit() {
+    var _a;
     var recipe = getRecipe();
     var valid = recipe.validate();
     if (valid != true) {
@@ -187,18 +191,14 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category);
         }
-        if (imageInput.files.length != 0) {
-            fetch("/image", {
-                method: 'POST',
-                body: imageInput.files[0]
-            });
+        var form = new FormData();
+        form.append("recipe", JSON.stringify({ "column": columns, "new": changes }));
+        if (((_a = imageInput.files) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            form.append("image", imageInput.files[0]);
         }
         fetch("/api/" + oldRecipe.title, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ "column": columns, "new": changes })
+            body: form
         }).then(function (response) {
             if (response.status === 200) {
                 window.location.href = "/";

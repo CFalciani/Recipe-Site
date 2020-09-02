@@ -1,14 +1,12 @@
 import express, { Request, Response } from "express";
-import multer from "multer";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
 import pg, {QueryResult} from "pg";
-import fs from "fs";
+import fileUpload from "express-fileupload";
 const connection = require("./env.json");
 const port:number = 3000;
 const hostname:string = "0.0.0.0";
 const app = express();
-const upload = multer({ dest: 'public_html/pictures/recipe/' })
 
 interface LooseObject {
     [key: string]: any
@@ -17,6 +15,7 @@ interface LooseObject {
 app.use(express.json());
 app.set('view engine', 'pug')
 app.use(express.static("public_html"));
+app.use(fileUpload());
 
 const Pool = pg.Pool;
 const pool = new Pool(connection);
@@ -66,15 +65,20 @@ app.get("/api/:recipe", function (req:Request, res:Response) {
 
 app.put("/api/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
-    let body = req.body;
+    console.log(req.body)
+    let body = JSON.parse(req.body.recipe);
     console.log(body.column, body.new);
     if (! body.hasOwnProperty("column") ||
         ! body.hasOwnProperty("new")) {
             res.sendStatus(400);
             return ;
     }
+    let title = recipe; // Default title is the current title
     let queryString = "UPDATE list SET ";
     for (let i = 0; i < body.column.length; i++) {
+        if (body.column[i] === "title") {
+            title = body.new[i]; // If title is changed, update it
+        }
         if (i != 0) {
             queryString += ',';
         }
@@ -87,7 +91,11 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
         } else {
             res.sendStatus(200);
         }
-    })
+    });
+    let file:LooseObject = req.files
+    if (file) {
+        file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
+    }
     console.log("Update " + recipe + ": " + queryString);
 });
 
@@ -104,7 +112,7 @@ app.delete("/api/:recipe" , function (req:Request, res:Response) {
 });
 
 app.post("/api", function (req:Request, res: Response) {
-    let body = req.body;
+    let body = JSON.parse(req.body.recipe);
     if (! body.hasOwnProperty("title") ||
         ! body.hasOwnProperty("ingredients") ||
         ! body.hasOwnProperty("directions") ||
@@ -112,6 +120,7 @@ app.post("/api", function (req:Request, res: Response) {
             res.sendStatus(400);
             return;
     }
+    let title:string = body.title;
     pool.query("SELECT title FROM list WHERE title = $1", [body.title]).then(function (data:QueryResult) {
         if (data.rowCount > 0) {
             res.sendStatus(409);
@@ -119,6 +128,10 @@ app.post("/api", function (req:Request, res: Response) {
         } else {
             pool.query("INSERT INTO list(title, ingredients, directions, category) VALUES($1, $2, $3, $4);", [body.title, body.ingredients, body.directions, body.category]);
             console.log("Create Recipe " + body.title);
+            let file:LooseObject = req.files
+            if (file) {
+                file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
+            }            
             res.sendStatus(200);
         }
     });
@@ -172,10 +185,6 @@ app.get("/conversions", function (req:Request, res:Response) {
         }
         res.json(conversions)
     })
-})
-app.post('/image', upload.single('image'), function (req, res, next) {
-    console.log(req.file);
-    res.send(req.file);
 })
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);

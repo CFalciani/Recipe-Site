@@ -45,7 +45,7 @@ function clearTable() {
     }
 }
 recipeName.textContent = title;
-image.src = title + ".jpg";
+image.src = "/pictures/recipes/" + title + ".jpg";
 imperialIngredients();
 directionsBox.textContent = directions;
 if (homeButton != null) {

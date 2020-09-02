@@ -170,12 +170,14 @@ function submitAdd() {
     if (valid != true) {
         errorBox.textContent = valid; 
     } else {
+        let form:FormData = new FormData();
+        form.append("recipe", JSON.stringify(recipe.jsonify()))
+        if (imageInput?.files?.length > 0) {
+            form.append("image", imageInput?.files[0])
+        }
         fetch("/api", {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(recipe.jsonify()).replace(/'/g, '"')
+            body: form
           }).then(function (response:Response) {
                 if (response.status === 200) {
                     window.location.href = "/";
@@ -214,18 +216,14 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category)
         }
-        if (imageInput.files.length == 0) {
-            fetch(`/image`, {
-	        method: 'POST',
-		body: imageInput.files[0]
-	    });
+        let form:FormData = new FormData();
+        form.append("recipe", JSON.stringify({"column": columns, "new": changes}));
+        if (imageInput.files?.length > 0) {
+            form.append("image", imageInput.files[0]);
         }
         fetch(`/api/${oldRecipe.title}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({"column": columns, "new": changes})
+            body: form 
           }).then(function (response:Response) {
                 if (response.status === 200) {
                     window.location.href = "/";
