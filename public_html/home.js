@@ -1,20 +1,25 @@
 var list = document.getElementById("recipe-list");
 var selection = document.getElementById("category");
 var search = document.getElementById("search");
-var categories = ["All", "Cookies", "Cakes", "Muffins"];
+var categories = ["All", "Cookies", "Cakes", "Muffins", "Other"];
 var recipes;
 function clear_list() {
     while (list === null || list === void 0 ? void 0 : list.lastChild) {
         list.lastChild.remove();
     }
 }
+// Sort by category
 function populate_category(cat) {
     if (!recipes) {
         return;
     }
     clear_list();
     var _loop_1 = function (i) {
+        // Iterate over each recipe
+        // If category is all, cat is set to "" which means all will be accepted
+        // Otherwise only accept matching categories
         if (cat == "" || recipes["categories"][i] == cat) {
+            // Add to the list
             var recipe_1 = recipes["titles"][i];
             var category = recipes["categories"][i];
             var li = document.createElement("li");
@@ -92,7 +97,7 @@ function populate_search(term) {
 }
 function deleteRecipe(e) {
     var _a;
-    e.stopPropagation();
+    e.stopPropagation(); // Do not trigger parent event handler
     var node = e.target;
     var title = (_a = node === null || node === void 0 ? void 0 : node.parentElement) === null || _a === void 0 ? void 0 : _a.getElementsByTagName("p")[0].textContent;
     var rm = window.confirm("Are you sure you would like to delete " + title + "?");
@@ -100,6 +105,7 @@ function deleteRecipe(e) {
         fetch("/api/" + title, { method: "DELETE" }).then(function (response) {
             console.log(response.status);
         });
+        location.reload();
     }
     else {
         return;

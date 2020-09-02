@@ -10,7 +10,7 @@ var imperial = true;
 var title = window.title;
 var ingredients = window.ingredients;
 var directions = window.directions;
-function addImperialIngredient(ingredient) {
+function addIngredient(ingredient) {
     var li = document.createElement("li");
     var ingString = "";
     if (ingredient.whole != null) {
@@ -21,6 +21,7 @@ function addImperialIngredient(ingredient) {
     }
     if (ingredient.unit != "none") {
         var unit = ingredient.unit;
+        // check if unit is singular or plural
         if (ingredient.whole == 1 && ingredient.num == null) {
             unit = unit.slice(0, -1);
         }
@@ -36,7 +37,7 @@ function imperialIngredients() {
     clearTable();
     for (var _i = 0, ingredients_1 = ingredients; _i < ingredients_1.length; _i++) {
         var ingredient = ingredients_1[_i];
-        addImperialIngredient(ingredient);
+        addIngredient(ingredient);
     }
 }
 function clearTable() {
@@ -44,6 +45,7 @@ function clearTable() {
         ingredientsList.lastChild.remove();
     }
 }
+// Show defaults
 recipeName.textContent = title;
 image.src = "/pictures/recipes/" + title + ".jpg";
 imperialIngredients();
@@ -51,15 +53,18 @@ directionsBox.textContent = directions;
 if (homeButton != null) {
     homeButton.addEventListener("click", function () { window.location.href = "/"; });
 }
+// Allow switching from volumetric to mass
 if (switchButton != null) {
     switchButton.addEventListener("click", function () {
         if (imperial) {
+            // Get all the conversion
             fetch("/conversions").then(function (response) {
                 return response.json();
             }).then(function (data) {
                 clearTable();
                 switchButton.textContent = "Switch to Cups";
                 imperial = false;
+                // run conversion for each ingredient
                 for (var _i = 0, ingredients_2 = ingredients; _i < ingredients_2.length; _i++) {
                     var ingredient = ingredients_2[_i];
                     if (data.hasOwnProperty(ingredient.name)) {
@@ -72,7 +77,7 @@ if (switchButton != null) {
                         else if (ingredient.unit === "tablespoons")
                             multiplier = 1 / tbpc;
                         else {
-                            addImperialIngredient(ingredient);
+                            addIngredient(ingredient);
                             continue;
                         }
                         var total = 0;
@@ -88,7 +93,7 @@ if (switchButton != null) {
                         ingredientsList === null || ingredientsList === void 0 ? void 0 : ingredientsList.append(li);
                         continue;
                     }
-                    addImperialIngredient(ingredient);
+                    addIngredient(ingredient);
                 }
             });
         }

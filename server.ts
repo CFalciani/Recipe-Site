@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { brotliDecompressSync } from "zlib";
 import { compileFunction } from "vm";
 import pg, {QueryResult} from "pg";
+import fs from "fs";
 import fileUpload from "express-fileupload";
 const connection = require("./env.json");
 const port:number = 3000;
@@ -23,6 +24,7 @@ pool.connect().then(function () {
     console.log("Connected to recipes db!");
 });
 
+// Get all recipe names and categories
 app.get("/api", function (req:Request, res:Response) {
     pool.query("SELECT json_build_object('titles', json_agg(list.title), 'categories', json_agg(list.category)) FROM LIST").then(function (response:QueryResult) {
         res.status(200);
@@ -35,6 +37,7 @@ app.get("/api", function (req:Request, res:Response) {
     console.log("Request All");
 });
 
+// Get all recipes with the specified category
 app.get("/api/category/:cat", function (req:Request, res:Response) {
     let category:string = req.params["cat"];
     console.log("Request all in category " + category);
@@ -49,6 +52,7 @@ app.get("/api/category/:cat", function (req:Request, res:Response) {
     })
 });
 
+// Get recipe with the specified name
 app.get("/api/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Request " + recipe);
@@ -63,7 +67,12 @@ app.get("/api/:recipe", function (req:Request, res:Response) {
     })
 });
 
+// Update recipe with specified name 
 app.put("/api/:recipe", function (req:Request, res:Response) {
+    // Should contain a body with a "column" an "new" attribute
+    // Optionally can contain a "files.image" attribute
+    // column should hold a list of strings which are the db columns to change
+    // new is a list of the new values for respective columns
     let recipe:string = req.params["recipe"];
     console.log(req.body)
     let body = JSON.parse(req.body.recipe);
@@ -75,6 +84,7 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
     }
     let title = recipe; // Default title is the current title
     let queryString = "UPDATE list SET ";
+    // Construct query string
     for (let i = 0; i < body.column.length; i++) {
         if (body.column[i] === "title") {
             title = body.new[i]; // If title is changed, update it
@@ -92,18 +102,31 @@ app.put("/api/:recipe", function (req:Request, res:Response) {
             res.sendStatus(200);
         }
     });
+    // Save image if there is one
     let file:LooseObject = req.files
+    let basePath:string = "./public_html/pictures/recipes/"
+    // if name was changed moved image to the new name
+    if (title !== recipe) {
+        fs.renameSync(basePath + recipe + ".jpg", basePath + title + ".jpg")
+    }
+    // If a file was passed, write it the correct location (will overwrite image if one already exists)
     if (file) {
         file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
     }
     console.log("Update " + recipe + ": " + queryString);
 });
 
+// Delete recipe with the specified name
 app.delete("/api/:recipe" , function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Delete " + recipe);
     pool.query("DELETE FROM list WHERE title = $1", [recipe]).then(function (response:QueryResult) {
         if (response.rowCount >= 1) {
+            // Delete image if it exists
+            let path:string = "./public_html/pictures/recipes/" + recipe + ".jpg";
+            if (fs.existsSync(path)) {
+                fs.unlinkSync(path);
+            }
             res.sendStatus(200);
         } else {
             res.sendStatus(404);
@@ -111,7 +134,10 @@ app.delete("/api/:recipe" , function (req:Request, res:Response) {
     })
 });
 
+// Add a recipe
 app.post("/api", function (req:Request, res: Response) {
+    // Should contain attributes:
+    // title, ingredients, directions, category, and an optional image
     let body = JSON.parse(req.body.recipe);
     if (! body.hasOwnProperty("title") ||
         ! body.hasOwnProperty("ingredients") ||
@@ -121,13 +147,16 @@ app.post("/api", function (req:Request, res: Response) {
             return;
     }
     let title:string = body.title;
+    // Check if the recipe name already exists
     pool.query("SELECT title FROM list WHERE title = $1", [body.title]).then(function (data:QueryResult) {
         if (data.rowCount > 0) {
+            // If so, we cannot insert as the title is the primary key
             res.sendStatus(409);
             return;
         } else {
             pool.query("INSERT INTO list(title, ingredients, directions, category) VALUES($1, $2, $3, $4);", [body.title, body.ingredients, body.directions, body.category]);
             console.log("Create Recipe " + body.title);
+            // Save image file if it exists
             let file:LooseObject = req.files
             if (file) {
                 file.image.mv("./public_html/pictures/recipes/" + title + ".jpg");
@@ -138,6 +167,7 @@ app.post("/api", function (req:Request, res: Response) {
 
 });
 
+// Get the html page for the recipe
 app.get("/recipe/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     pool.query("SELECT * FROM list WHERE title = $1", [recipe]).then(function (response:QueryResult) {
@@ -150,6 +180,7 @@ app.get("/recipe/:recipe", function (req:Request, res:Response) {
     })
 })
 
+// Get the edit paged for the specified recipe
 app.get("/edit/:recipe", function (req:Request, res:Response) {
     let recipe:string = req.params["recipe"];
     console.log("Edit " + recipe);
@@ -163,6 +194,7 @@ app.get("/edit/:recipe", function (req:Request, res:Response) {
     })
 });
 
+// Get an array of all ingredients in the conversion db
 app.get("/ingredients", function (req:Request, res:Response) {
     console.log("Request for ingredients list");
     pool.query("SELECT ingredient FROM conversion").then(function (response:QueryResult) {
@@ -172,6 +204,7 @@ app.get("/ingredients", function (req:Request, res:Response) {
     })
 })
 
+// Get an array of all conversions in the db
 app.get("/conversions", function (req:Request, res:Response) {
     console.log("Request for conversions list");
     pool.query("SELECT * FROM conversion").then(function (response:QueryResult) {
@@ -186,6 +219,7 @@ app.get("/conversions", function (req:Request, res:Response) {
         res.json(conversions)
     })
 })
+
 app.listen(port, hostname, () => {
     console.log(`Listening at: http://${hostname}:${port}`);
 });

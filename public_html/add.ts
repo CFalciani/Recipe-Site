@@ -7,7 +7,11 @@ let errorBox:HTMLElement|null = document.getElementById("error-message");
 let categoryInput:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
 let imageInput:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("image");
 let homeButton:HTMLElement|null = document.getElementById("home");
+
+// All possible ingredients
 let possible:Array<string> = [];
+
+// Expand Window as pug is assigning global variables with these names
 interface Window {
     oldTitle:string;
     oldCategory:string;
@@ -28,7 +32,7 @@ let oldIngredients = window.oldIngredients;
 let oldDirections = window.oldDirections;
 let autocomplete = window.autocomplete;
 
-
+// Get a list of all possible ingredients to recommend
 fetch("/ingredients").then(function (response:Response) {
     return response.json();
 }).then(function (data) {
@@ -61,6 +65,8 @@ class Ingredient {
         }
     }
     validate() {
+        // Must have a name,
+        // whole num and den must be numbers
         if (! this.name) 
             return false;
         if (this.whole != null && isNaN(this.whole))
@@ -112,6 +118,8 @@ class Recipe {
         return json;
     }
     validate () {
+        // Title must exist
+        // each ingredient must be valid
         if (this.title === "") 
             return "Invalid title: title must contain text!";
         for (let item of this.ingredients) {
@@ -128,6 +136,7 @@ class Recipe {
 }
 
 function getRecipe() {
+    // Parses form and returns an ingredient object
     errorBox.textContent = ""; // clear error box
 
     let row: any;
@@ -149,25 +158,12 @@ function getRecipe() {
 }
 
 function submitAdd() {
+    // Submit function when adding a recipe
     errorBox.textContent = ""; // clear error box
-
-    let row: any;
-    let list: Array<Ingredient> = [];
-    let rows:any = ingredients.getElementsByTagName("tr"); // Type any bc/we cannot iterate over HTMLCollection
-
-    for (row of rows) {
-        let inputs: HTMLCollection = row.getElementsByTagName("input");
-        let name:string = (<HTMLInputElement>inputs[0]).value;
-        let whole: string = (<HTMLInputElement>inputs[1]).value;
-        let num:string = (<HTMLInputElement>inputs[2]).value;
-        let den:string = (<HTMLInputElement>inputs[3]).value;
-        let unit:string = row.getElementsByTagName("select")[0].value;
-        let data = new Ingredient(name, whole, num, den, unit)
-        list.push(data);
-    }
-    let recipe = new Recipe(titleInput.value, list, directionsInput.value, categoryInput.value);
+    let recipe = getRecipe();
     let valid:boolean|string = recipe.validate();
     if (valid != true) {
+        // Show error message if there is one 
         errorBox.textContent = valid; 
     } else {
         let form:FormData = new FormData();
@@ -175,6 +171,7 @@ function submitAdd() {
         if (imageInput?.files?.length > 0) {
             form.append("image", imageInput?.files[0])
         }
+        // add FormData for the recipe and the image if there is one
         fetch("/api", {
             method: 'POST',
             body: form
@@ -193,11 +190,14 @@ function submitAdd() {
 }
 
 function submitEdit() {
+    // Submit function when editing
     let recipe:Recipe = getRecipe();
     let valid:boolean|string = recipe.validate();
     if (valid != true) {
+        // show error if not valid
         errorBox.textContent = valid; 
     } else {
+        // Find what the user has changed
         let columns:Array<string> = [];
         let changes:Array<string|object> = [];
         if (recipe.title != oldRecipe.title) {
@@ -216,11 +216,13 @@ function submitEdit() {
             columns.push("category");
             changes.push(recipe.category)
         }
+
         let form:FormData = new FormData();
         form.append("recipe", JSON.stringify({"column": columns, "new": changes}));
         if (imageInput.files?.length > 0) {
             form.append("image", imageInput.files[0]);
         }
+        // Attach recipe and option image to a FormData object
         fetch(`/api/${oldRecipe.title}`, {
             method: 'PUT',
             body: form 
@@ -243,6 +245,7 @@ function removeIngredient (e: any) {
 }
 
 function createSelect() {
+    // Create the select box for a unit
     let select:HTMLSelectElement = document.createElement("select");
     let none:HTMLOptionElement = document.createElement("option");
     let cups:HTMLOptionElement = document.createElement("option");
@@ -272,7 +275,7 @@ function createSelect() {
 }
 
 function addRow(ing = null) {
-
+    // Add a row to the screen for another ingredient
     let row:HTMLTableRowElement = document.createElement("tr");
 
     let name:HTMLInputElement = document.createElement("input");
@@ -333,10 +336,11 @@ function addRow(ing = null) {
     row.append(select);
     row.append(remove);
     ingredients.append(row);
-    autocomplete(name, possible);
+    autocomplete(name, possible); // Assign autocomplete to run on the name enter
 }
 
 function add() {
+    // Call this if on the add page
     if (submitButton != null &&
         titleInput != null &&
         directionsInput != null &&
@@ -360,6 +364,7 @@ if (homeButton != null) {
 }
 
 function edit() {
+    // Call this if on the edit page
     if (submitButton != null &&
         titleInput != null &&
         directionsInput != null &&

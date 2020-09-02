@@ -1,7 +1,7 @@
 let list:HTMLUListElement|null = <HTMLUListElement|null>document.getElementById("recipe-list")
 let selection:HTMLSelectElement|null = <HTMLSelectElement|null>document.getElementById("category");
 let search:HTMLInputElement|null = <HTMLInputElement|null>document.getElementById("search");
-let categories = ["All", "Cookies", "Cakes", "Muffins"];
+let categories = ["All", "Cookies", "Cakes", "Muffins", "Other"]; 
 let recipes:any;
 
 function clear_list() {
@@ -10,13 +10,18 @@ function clear_list() {
     }
 }
 
+// Sort by category
 function populate_category(cat:string) {
     if (! recipes) {
         return;
     }
     clear_list();
     for (let i = 0; i < recipes["titles"].length; i++) {
+        // Iterate over each recipe
+        // If category is all, cat is set to "" which means all will be accepted
+        // Otherwise only accept matching categories
         if (cat == "" || recipes["categories"][i] == cat) {
+            // Add to the list
             let recipe = recipes["titles"][i];
             let category = recipes["categories"][i];
 
@@ -102,7 +107,7 @@ function populate_search (term:string) {
 }
 
 function deleteRecipe(e:Event) {
-    e.stopPropagation();
+    e.stopPropagation(); // Do not trigger parent event handler
     let node:HTMLElement|null = <HTMLElement|null>e.target
     let title = node?.parentElement?.getElementsByTagName("p")[0].textContent;
     let rm = window.confirm(`Are you sure you would like to delete ${title}?`);
@@ -110,6 +115,7 @@ function deleteRecipe(e:Event) {
         fetch(`/api/${title}`, {method: "DELETE"}).then(function (response:Response) {
             console.log(response.status)
         })
+        location.reload();
     } else {
         return 
     }
@@ -120,6 +126,7 @@ if (list != null) {
         return response.json();
     }).then(function (data) {
         recipes = data;
+        // Defualt to all
         populate_category("");
     });
 } else {
