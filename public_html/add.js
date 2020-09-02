@@ -7,6 +7,7 @@ var errorBox = document.getElementById("error-message");
 var categoryInput = document.getElementById("category");
 var imageInput = document.getElementById("image");
 var homeButton = document.getElementById("home");
+// All possible ingredients
 var possible = [];
 var oldRecipe = { title: "", directions: "", ingredients: [{}], category: "" };
 var oldTitle = window.oldTitle;
@@ -14,6 +15,7 @@ var oldCategory = window.oldCategory;
 var oldIngredients = window.oldIngredients;
 var oldDirections = window.oldDirections;
 var autocomplete = window.autocomplete;
+// Get a list of all possible ingredients to recommend
 fetch("/ingredients").then(function (response) {
     return response.json();
 }).then(function (data) {
@@ -40,6 +42,8 @@ var Ingredient = /** @class */ (function () {
         }
     }
     Ingredient.prototype.validate = function () {
+        // Must have a name,
+        // whole num and den must be numbers
         if (!this.name)
             return false;
         if (this.whole != null && isNaN(this.whole))
@@ -87,6 +91,8 @@ var Recipe = /** @class */ (function () {
         return json;
     };
     Recipe.prototype.validate = function () {
+        // Title must exist
+        // each ingredient must be valid
         if (this.title === "")
             return "Invalid title: title must contain text!";
         for (var _i = 0, _a = this.ingredients; _i < _a.length; _i++) {
@@ -102,6 +108,7 @@ var Recipe = /** @class */ (function () {
     return Recipe;
 }());
 function getRecipe() {
+    // Parses form and returns an ingredient object
     errorBox.textContent = ""; // clear error box
     var row;
     var list = [];
@@ -122,24 +129,12 @@ function getRecipe() {
 }
 function submitAdd() {
     var _a;
+    // Submit function when adding a recipe
     errorBox.textContent = ""; // clear error box
-    var row;
-    var list = [];
-    var rows = ingredients.getElementsByTagName("tr"); // Type any bc/we cannot iterate over HTMLCollection
-    for (var _i = 0, rows_2 = rows; _i < rows_2.length; _i++) {
-        row = rows_2[_i];
-        var inputs = row.getElementsByTagName("input");
-        var name_2 = inputs[0].value;
-        var whole = inputs[1].value;
-        var num = inputs[2].value;
-        var den = inputs[3].value;
-        var unit = row.getElementsByTagName("select")[0].value;
-        var data = new Ingredient(name_2, whole, num, den, unit);
-        list.push(data);
-    }
-    var recipe = new Recipe(titleInput.value, list, directionsInput.value, categoryInput.value);
+    var recipe = getRecipe();
     var valid = recipe.validate();
     if (valid != true) {
+        // Show error message if there is one 
         errorBox.textContent = valid;
     }
     else {
@@ -148,6 +143,7 @@ function submitAdd() {
         if (((_a = imageInput === null || imageInput === void 0 ? void 0 : imageInput.files) === null || _a === void 0 ? void 0 : _a.length) > 0) {
             form.append("image", imageInput === null || imageInput === void 0 ? void 0 : imageInput.files[0]);
         }
+        // add FormData for the recipe and the image if there is one
         fetch("/api", {
             method: 'POST',
             body: form
@@ -167,12 +163,15 @@ function submitAdd() {
 }
 function submitEdit() {
     var _a;
+    // Submit function when editing
     var recipe = getRecipe();
     var valid = recipe.validate();
     if (valid != true) {
+        // show error if not valid
         errorBox.textContent = valid;
     }
     else {
+        // Find what the user has changed
         var columns = [];
         var changes = [];
         if (recipe.title != oldRecipe.title) {
@@ -196,6 +195,7 @@ function submitEdit() {
         if (((_a = imageInput.files) === null || _a === void 0 ? void 0 : _a.length) > 0) {
             form.append("image", imageInput.files[0]);
         }
+        // Attach recipe and option image to a FormData object
         fetch("/api/" + oldRecipe.title, {
             method: 'PUT',
             body: form
@@ -217,6 +217,7 @@ function removeIngredient(e) {
     e.target.parentElement.remove();
 }
 function createSelect() {
+    // Create the select box for a unit
     var select = document.createElement("select");
     var none = document.createElement("option");
     var cups = document.createElement("option");
@@ -226,6 +227,7 @@ function createSelect() {
     select.style.margin = "10px";
     none.value = "none";
     none.textContent = "No Units";
+    none.setAttribute("selected", '');
     select.append(none);
     cups.value = "cups";
     cups.textContent = "Cups";
@@ -240,6 +242,7 @@ function createSelect() {
 }
 function addRow(ing) {
     if (ing === void 0) { ing = null; }
+    // Add a row to the screen for another ingredient
     var row = document.createElement("tr");
     var name = document.createElement("input");
     var whole = document.createElement("input");
@@ -292,9 +295,10 @@ function addRow(ing) {
     row.append(select);
     row.append(remove);
     ingredients.append(row);
-    autocomplete(name, possible);
+    autocomplete(name, possible); // Assign autocomplete to run on the name enter
 }
 function add() {
+    // Call this if on the add page
     if (submitButton != null &&
         titleInput != null &&
         directionsInput != null &&
@@ -315,6 +319,7 @@ if (homeButton != null) {
     homeButton.addEventListener("click", function () { window.location.href = "/"; });
 }
 function edit() {
+    // Call this if on the edit page
     if (submitButton != null &&
         titleInput != null &&
         directionsInput != null &&
