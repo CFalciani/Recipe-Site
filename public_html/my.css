@@ -9,6 +9,7 @@ input[type="search"]::-webkit-search-results-decoration {
     top: 10px;
     bottom: 10px;
     cursor: pointer;
+    height: 20px;
 }
 .home-button:hover {
     color: #4a4a4a;
