@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /home/clayx11/Recipe-Website
+cd /home/USER/Recipe-Website
 node server
