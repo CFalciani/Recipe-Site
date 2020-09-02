@@ -1,5 +1,5 @@
 #!/bin/bash
-BASE="/home/clayx11/Recipe-Website/public_html/backups/"
+BASE="/home/USER/Recipe-Website/public_html/backups/"
 FILES="${BASE}recipes_5.db
 ${BASE}recipes_4.db
 ${BASE}recipes_3.db
